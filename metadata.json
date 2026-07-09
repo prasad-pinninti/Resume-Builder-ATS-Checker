@@ -1,0 +1,6 @@
+{
+  "name": "AI Resume Builder",
+  "description": "A full-stack professional resume builder powered by AI. Design, generate, and export compelling ATS-friendly resumes in minutes using professional templates.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

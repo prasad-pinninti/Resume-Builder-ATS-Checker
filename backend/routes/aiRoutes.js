@@ -1,0 +1,21 @@
+import express from "express";
+import protect from "../middlewares/authMiddleware.js";
+import {
+  enhanceJobDescription,
+  enhanceProfessionalSummary,
+  uploadResume,
+  checkAtsScore,
+  generateCoverLetter,
+  generateInterviewPrep,
+} from "../controllers/aiController.js";
+
+const aiRouter = express.Router();
+
+aiRouter.post("/enhanced-pro-sum", protect, enhanceProfessionalSummary);
+aiRouter.post("/enhanced-job-desc", protect, enhanceJobDescription);
+aiRouter.post("/upload-resume", protect, uploadResume);
+aiRouter.post("/check-ats", protect, checkAtsScore);
+aiRouter.post("/generate-cover-letter", protect, generateCoverLetter);
+aiRouter.post("/interview-prep", protect, generateInterviewPrep);
+
+export default aiRouter;
