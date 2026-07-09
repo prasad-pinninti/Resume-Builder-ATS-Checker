@@ -8,10 +8,10 @@ import aiRouter from "./routes/aiRoutes.js";
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
-// Database connection
-await connectDB();
+// Database connection (runs asynchronously to prevent blocking server start)
+connectDB().catch(err => console.error("Database connection failed:", err));
 
 // Middleware
 app.use(express.json());

@@ -3,6 +3,8 @@ import MinimalImageTemplate from "./templates/MinimalImageTemplate";
 import MinimalTemplate from "./templates/MinimalTemplate";
 import ModernTemplate from "./templates/ModernTemplate";
 import AtsTemplate from "./templates/AtsTemplate";
+import CreativeTemplate from "./templates/CreativeTemplate";
+import AcademicTemplate from "./templates/AcademicTemplate";
 
 const ResumePreview = ({ data, template, accentcolor, classes = "" }) => {
   const renderTemplate = () => {
@@ -15,6 +17,10 @@ const ResumePreview = ({ data, template, accentcolor, classes = "" }) => {
         return <MinimalImageTemplate data={data} accentColor={accentcolor} />;
       case "ats":
         return <AtsTemplate data={data} accentColor={accentcolor} />;
+      case "creative":
+        return <CreativeTemplate data={data} accentColor={accentcolor} />;
+      case "academic":
+        return <AcademicTemplate data={data} accentColor={accentcolor} />;
 
       default:
         return <ClassicTemplate data={data} accentColor={accentcolor} />;

@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 const ProfessionalSummaryForm = ({ data, onChange, setResumeData }) => {
   const { token } = useSelector((state) => state.auth);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [expLevel, setExpLevel] = useState("mid");
 
   const generateSummary = async () => {
     try {
@@ -15,7 +16,7 @@ const ProfessionalSummaryForm = ({ data, onChange, setResumeData }) => {
 
       const response = await api.post(
         "/api/ai/enhanced-pro-sum",
-        { userContent: prompt },
+        { userContent: prompt, experienceLevel: expLevel },
         { headers: { Authorization: token } }
       );
 
@@ -42,18 +43,29 @@ const ProfessionalSummaryForm = ({ data, onChange, setResumeData }) => {
           </p>
         </div>
 
-        <button
-          disabled={isGenerating}
-          onClick={generateSummary}
-          className="flex items-center gap-2 px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors disabled:opacity-50"
-        >
-          {isGenerating ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Sparkles className="size-4" />
-          )}
-          {isGenerating ? "Enhancing..." : "AI Enhance"}
-        </button>
+        <div className="flex items-center gap-2">
+          <select
+            value={expLevel}
+            onChange={(e) => setExpLevel(e.target.value)}
+            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white outline-none focus:ring-1 focus:ring-purple-400"
+          >
+            <option value="entry">Entry Level</option>
+            <option value="mid">Mid Level</option>
+            <option value="senior">Senior Level</option>
+          </select>
+          <button
+            disabled={isGenerating}
+            onClick={generateSummary}
+            className="flex items-center gap-2 px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors disabled:opacity-50"
+          >
+            {isGenerating ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Sparkles className="size-4" />
+            )}
+            {isGenerating ? "Enhancing..." : "AI Enhance"}
+          </button>
+        </div>
       </div>
 
       <div className="mt-6">

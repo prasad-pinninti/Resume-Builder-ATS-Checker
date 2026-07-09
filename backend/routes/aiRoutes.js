@@ -7,10 +7,14 @@ import {
   checkAtsScore,
   generateCoverLetter,
   generateInterviewPrep,
+  runDiagnostics,
+  testGrok,
 } from "../controllers/aiController.js";
 
 const aiRouter = express.Router();
 
+aiRouter.get("/diagnostic", runDiagnostics);
+aiRouter.get("/test-grok", testGrok);
 aiRouter.post("/enhanced-pro-sum", protect, enhanceProfessionalSummary);
 aiRouter.post("/enhanced-job-desc", protect, enhanceJobDescription);
 aiRouter.post("/upload-resume", protect, uploadResume);

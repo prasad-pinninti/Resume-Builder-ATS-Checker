@@ -1,18 +1,30 @@
 import ai from "../configs/ai.js";
 import Resume from "../models/Resume.js";
+import mongoose from "mongoose";
+import https from "https";
 
 // Controller for enhancing a resume's professional summary
 // POST: /api/ai/enhance-pro-sum
 export const enhanceProfessionalSummary = async (req, res) => {
   try {
-    const { userContent } = req.body;
+    const { userContent, experienceLevel } = req.body;
 
     if (!userContent) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
-      return res.status(400).json({ message: "AI features are disabled because GEMINI_API_KEY is not configured in the server's .env file." });
+    if (!process.env.GROQ_API_KEY && !process.env.XAI_API_KEY && !process.env.GROK_API_KEY) {
+      return res.status(400).json({ message: "AI features are disabled because GROQ_API_KEY is not configured in the server's .env file." });
+    }
+
+    let systemContent = "You are an expert in resume writing. Your task is to enhance the professional summary of a resume. The summary should be 1-2 sentences also highlighting key skills, experience, and career objectives. Make it compelling and ATS-friendly. And only return text no options or anything else.";
+    if (experienceLevel) {
+      systemContent += ` Tailor the summary specifically for an ${experienceLevel}-level candidate.`;
+      if (experienceLevel.toLowerCase() === "entry") {
+        systemContent += " Focus on drive, relevant project coursework, rapid learning ability, and academic alignment, as professional years of experience might be lower.";
+      } else if (experienceLevel.toLowerCase() === "senior") {
+        systemContent += " Focus on senior leadership, large-scale systems or team ownership, business outcomes, and key strategic highlights.";
+      }
     }
 
     const response = await ai.chat.completions.create({
@@ -20,8 +32,7 @@ export const enhanceProfessionalSummary = async (req, res) => {
       messages: [
         {
           role: "system",
-          content:
-            "You are an expert in resume writing. Your task is to enhance the professional summary of a resume. The summary should be 1-2 sentences also highlighting key skills, experience, and career objectives. Make it compelling and ATS-friendly. And only return text no options or anything else.",
+          content: systemContent,
         },
         {
           role: "user",
@@ -42,14 +53,24 @@ export const enhanceProfessionalSummary = async (req, res) => {
 // POST: /api/ai/enhance-job-desc
 export const enhanceJobDescription = async (req, res) => {
   try {
-    const { userContent } = req.body;
+    const { userContent, experienceLevel } = req.body;
 
     if (!userContent) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
-      return res.status(400).json({ message: "AI features are disabled because GEMINI_API_KEY is not configured in the server's .env file." });
+    if (!process.env.GROQ_API_KEY && !process.env.XAI_API_KEY && !process.env.GROK_API_KEY) {
+      return res.status(400).json({ message: "AI features are disabled because GROQ_API_KEY is not configured in the server's .env file." });
+    }
+
+    let systemContent = "You are an expert in resume writing. Your task is to enhance the job description of a resume. The job description should be only in 1-2 sentence also highlighting key responsibilities and achievements. Use action verbs and quantifiable results where possible. Make it ATS-friendly. And only return text no options or anything else.";
+    if (experienceLevel) {
+      systemContent += ` Tailor the description specifically for an ${experienceLevel}-level candidate.`;
+      if (experienceLevel.toLowerCase() === "entry") {
+        systemContent += " Highlight technical skill application, execution efficiency, collaboration, and learning eagerness.";
+      } else if (experienceLevel.toLowerCase() === "senior") {
+        systemContent += " Highlight system design, architectural impact, project ownership, mentorship, scale, and high-value business output.";
+      }
     }
 
     const response = await ai.chat.completions.create({
@@ -57,8 +78,7 @@ export const enhanceJobDescription = async (req, res) => {
       messages: [
         {
           role: "system",
-          content:
-            "You are an expert in resume writing. Your task is to enhance the job description of a resume. The job description should be only in 1-2 sentence also highlighting key responsibilities and achievements. Use action verbs and quantifiable results where possible. Make it ATS-friendly. And only return text no options or anything else.",
+          content: systemContent,
         },
         {
           role: "user",
@@ -86,8 +106,8 @@ export const uploadResume = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
-      return res.status(400).json({ message: "AI features are disabled because GEMINI_API_KEY is not configured in the server's .env file." });
+    if (!process.env.GROQ_API_KEY && !process.env.XAI_API_KEY && !process.env.GROK_API_KEY) {
+      return res.status(400).json({ message: "AI features are disabled because GROQ_API_KEY is not configured in the server's .env file." });
     }
 
     const systemPrompt =
@@ -176,8 +196,8 @@ export const checkAtsScore = async (req, res) => {
       return res.status(400).json({ message: "Missing resume content" });
     }
 
-    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
-      return res.status(400).json({ message: "AI features are disabled because GEMINI_API_KEY is not configured in the server's .env file." });
+    if (!process.env.GROQ_API_KEY && !process.env.XAI_API_KEY && !process.env.GROK_API_KEY) {
+      return res.status(400).json({ message: "AI features are disabled because GROQ_API_KEY is not configured in the server's .env file." });
     }
 
     const hasJd = jobDescription && jobDescription.trim().length > 0;
@@ -249,7 +269,11 @@ Return ONLY the JSON object, formatted like this:
       response_format: { type: "json_object" }
     });
 
-    const parsedData = JSON.parse(response.choices[0].message.content);
+    let content = response.choices[0].message.content || "";
+    if (content.includes("```")) {
+      content = content.replace(/```json/gi, "").replace(/```/g, "").trim();
+    }
+    const parsedData = JSON.parse(content);
     return res.status(200).json(parsedData);
   } catch (error) {
     return res.status(400).json({ message: error.message });
@@ -266,8 +290,8 @@ export const generateCoverLetter = async (req, res) => {
       return res.status(400).json({ message: "Missing resume content" });
     }
 
-    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
-      return res.status(400).json({ message: "AI features are disabled because GEMINI_API_KEY is not configured." });
+    if (!process.env.GROQ_API_KEY && !process.env.XAI_API_KEY && !process.env.GROK_API_KEY) {
+      return res.status(400).json({ message: "AI features are disabled because GROQ_API_KEY is not configured." });
     }
 
     const response = await ai.chat.completions.create({
@@ -300,8 +324,8 @@ export const generateInterviewPrep = async (req, res) => {
       return res.status(400).json({ message: "Missing resume content" });
     }
 
-    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
-      return res.status(400).json({ message: "AI features are disabled because GEMINI_API_KEY is not configured." });
+    if (!process.env.GROQ_API_KEY && !process.env.XAI_API_KEY && !process.env.GROK_API_KEY) {
+      return res.status(400).json({ message: "AI features are disabled because GROQ_API_KEY is not configured." });
     }
 
     const response = await ai.chat.completions.create({
@@ -321,6 +345,91 @@ export const generateInterviewPrep = async (req, res) => {
     return res.status(200).json({ content: response.choices[0].message.content });
   } catch (error) {
     return res.status(400).json({ message: error.message });
+  }
+};
+
+export const runDiagnostics = async (req, res) => {
+  const apiKey = process.env.GROQ_API_KEY || process.env.XAI_API_KEY || process.env.GROK_API_KEY;
+  const isGroq = apiKey && apiKey.startsWith("gsk_");
+
+  const report = {
+    timestamp: new Date(),
+    database: "Unknown",
+    active_provider: isGroq ? "Groq" : "Grok (xAI)",
+    api_key_status: "Unknown",
+    api_connection: "Unknown"
+  };
+
+  // 1. Check Database
+  try {
+    const dbStatus = mongoose.connection.readyState;
+    const states = {
+      0: "Disconnected",
+      1: "Connected",
+      2: "Connecting",
+      3: "Disconnecting"
+    };
+    report.database = states[dbStatus] || "Unknown";
+  } catch (err) {
+    report.database = `Error: ${err.message}`;
+  }
+
+  // 2. Check API Key
+  if (!apiKey) {
+    report.api_key_status = "Missing";
+  } else {
+    report.api_key_status = `Configured (Length: ${apiKey.length})`;
+  }
+
+  // 3. Check API Connection
+  if (apiKey) {
+    const pingUrl = isGroq ? "https://api.groq.com/" : "https://api.x.ai/";
+    try {
+      await new Promise((resolve) => {
+        const request = https.get(pingUrl, { timeout: 4000 }, (response) => {
+          report.api_connection = `Reachable (Status: ${response.statusCode})`;
+          resolve();
+        });
+        request.on("error", (err) => {
+          report.api_connection = `Unreachable: ${err.message}`;
+          resolve();
+        });
+        request.on("timeout", () => {
+          request.destroy();
+          report.api_connection = "Unreachable: Connection Timeout";
+          resolve();
+        });
+      });
+    } catch (err) {
+      report.api_connection = `Unreachable: ${err.message}`;
+    }
+  } else {
+    report.api_connection = "N/A (No API key configured)";
+  }
+
+  return res.status(200).json(report);
+};
+
+export const testGrok = async (req, res) => {
+  try {
+    const defaultModel = (process.env.GROQ_API_KEY || process.env.XAI_API_KEY || "").startsWith("gsk_") ? "llama-3.3-70b-versatile" : "grok-2-1212";
+    const response = await ai.chat.completions.create({
+      model: process.env.OPENAI_MODEL || defaultModel,
+      messages: [
+        { role: "user", content: "Say hello in one word." }
+      ]
+    });
+    return res.status(200).json({
+      success: true,
+      modelUsed: process.env.OPENAI_MODEL || defaultModel,
+      reply: response.choices[0].message.content
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+      stack: error.stack
+    });
   }
 };
 

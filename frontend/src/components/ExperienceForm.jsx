@@ -33,7 +33,7 @@ const ExperienceForm = ({ data, onChange }) => {
     onChange(updated);
   };
 
-  const generateDescription = async (index) => {
+  const generateDescription = async (index, level) => {
     setGeneratingIndex(index);
     const experience = data[index];
     const prompt = `enhance this job description ${experience.description} for the position of ${experience.position} at ${experience.company}`;
@@ -41,7 +41,7 @@ const ExperienceForm = ({ data, onChange }) => {
     try {
       const { data } = await api.post(
         "/api/ai/enhanced-job-desc",
-        { userContent: prompt },
+        { userContent: prompt, experienceLevel: level || "mid" },
         { headers: { Authorization: token } }
       );
 
@@ -159,24 +159,38 @@ const ExperienceForm = ({ data, onChange }) => {
                   <label className="text-sm font-medium text-gray-700">
                     Job Description
                   </label>
-                  <button
-                    onClick={() => generateDescription(index)}
-                    disabled={
-                      generatingIndex === index ||
-                      !experience.position ||
-                      !experience.company
-                    }
-                    className="flex items-center gap-1 px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors disabled:opacity-50"
-                  >
-                    {generatingIndex === index ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-3 h-3" />
-                    )}
-                    {generatingIndex === index
-                      ? "Enhancing..."
-                      : "Enhance with AI"}
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <select
+                      id={`exp-level-${index}`}
+                      defaultValue="mid"
+                      className="text-[10px] border border-gray-300 rounded px-1.5 py-0.5 bg-white outline-none focus:ring-1 focus:ring-purple-400"
+                    >
+                      <option value="entry">Entry Level</option>
+                      <option value="mid">Mid Level</option>
+                      <option value="senior">Senior Level</option>
+                    </select>
+                    <button
+                      onClick={() => {
+                        const selectEl = document.getElementById(`exp-level-${index}`);
+                        generateDescription(index, selectEl ? selectEl.value : "mid");
+                      }}
+                      disabled={
+                        generatingIndex === index ||
+                        !experience.position ||
+                        !experience.company
+                      }
+                      className="flex items-center gap-1 px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors disabled:opacity-50"
+                    >
+                      {generatingIndex === index ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3 h-3" />
+                      )}
+                      {generatingIndex === index
+                        ? "Enhancing..."
+                        : "Enhance with AI"}
+                    </button>
+                  </div>
                 </div>
 
                 <textarea

@@ -27,6 +27,20 @@ const TemplateSelector = ({ selectedTemplate, onChange }) => {
         "Sleek design with creative layouts, subtle color accents, and structured timeline styling. Great for tech and design roles.",
     },
     {
+      id: "creative",
+      name: "Creative Portfolio",
+      image: "/creative.png",
+      preview:
+        "A stunning 2-column layout with a styled sidebar, circular profile photo, and skill visualization. Designed for tech, media, and creative portfolios.",
+    },
+    {
+      id: "academic",
+      name: "Academic CV",
+      image: "/academic.png",
+      preview:
+        "Traditional serif style designed for researchers, academics, and teachers. Emphasizes chronological achievements, education detail, and research projects.",
+    },
+    {
       id: "minimal-image",
       name: "Minimal Image",
       image: "/minimal_image.png",
